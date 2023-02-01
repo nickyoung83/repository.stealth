@@ -348,6 +348,8 @@ class RealDebrid:
         files = r['files']
         new_torrent = []
 
+        files = [i for i in files if not (i['selected'] == 0)]
+
         count = 0
         for x in files:
             filename = x['path']
