@@ -12,7 +12,7 @@ import zipfile
 
 from xml.etree import ElementTree
 
-SCRIPT_VERSION = 4
+SCRIPT_VERSION = 5
 KODI_VERSIONS = ["krypton", "leia", "matrix", "nexus", "repo"]
 IGNORE = [
     ".git",
@@ -75,19 +75,19 @@ def _setup_colors():
         return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 
     def legacy_support():
-        color = 0
         console = 0
-        if sys.platform in ["linux", "linux2"]:
-            color = os.system("color")
+        color = 0
+        if sys.platform in ["linux", "linux2", "darwin"]:
+            pass
         elif sys.platform == "win32":
+            color = os.system("color")
+
             from ctypes import windll
 
             k = windll.kernel32
             console = k.SetConsoleMode(k.GetStdHandle(-11), 7)
-        elif sys.platform == "darwin":
-            pass
 
-        return color == 1 or console == 1
+        return any([color == 1, console == 1])
 
     return any(
         [
@@ -322,7 +322,7 @@ class Generator:
             except Exception as e:
                 print(
                     "Excluding {}: {}".format(
-                        color_text(id, 'yellow'), color_text(e, 'red')
+                        color_text(addon, 'yellow'), color_text(e, 'red')
                     )
                 )
 
@@ -346,10 +346,9 @@ class Generator:
         Generates a new addons.xml.md5 file.
         """
         try:
-            m = hashlib.md5(
-                open(addons_xml_path, "r", encoding="utf-8").read().encode("utf-8")
-            ).hexdigest()
-            self._save_file(m, file=md5_path)
+            with open(addons_xml_path, "r", encoding="utf-8") as f:
+                m = hashlib.md5(f.read().encode("utf-8")).hexdigest()
+                self._save_file(m, file=md5_path)
 
             return True
         except Exception as e:
@@ -364,7 +363,8 @@ class Generator:
         Saves a file.
         """
         try:
-            open(file, "w").write(data)
+            with open(file, "w") as f:
+                f.write(data)
         except Exception as e:
             print(
                 "An error occurred saving {}!\n{}".format(
