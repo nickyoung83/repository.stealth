@@ -265,6 +265,7 @@ class RealDebrid:
     def get_torrent_info(self, id):
         url = self.rd_api + '/torrents/info/' + id
         result = self.rd_request(url, method='get').json()
+        result['files'][:] = [d for d in result['files'] if d.get('selected') != 0]
         return result
 
 
@@ -347,8 +348,6 @@ class RealDebrid:
         links = r['links']
         files = r['files']
         new_torrent = []
-
-        files = [i for i in files if not (i['selected'] == 0)]
 
         count = 0
         for x in files:

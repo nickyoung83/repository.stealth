@@ -68,7 +68,7 @@ import tempfile
 import threading
 import xml.etree.ElementTree
 import zipfile
-
+from pathlib import Path
 
 AddonMetadata = collections.namedtuple(
     'AddonMetadata', ('id', 'version', 'root'))
@@ -235,6 +235,26 @@ def fetch_addon_from_folder(raw_addon_location, target_folder):
     metadata_path = os.path.join(addon_location, INFO_BASENAME)
     addon_metadata = parse_metadata(metadata_path)
     addon_target_folder = os.path.join(target_folder, addon_metadata.id)
+    base_path = 'P:\\github\\repository.stealth\\repo'
+
+    for parent, dirnames, filenames in os.walk(base_path):
+        for fn in filenames:
+            if fn.lower().endswith("pyo") or fn.lower().endswith("pyc"):
+                compiled = os.path.join(parent, fn)
+                try:
+                    os.remove(compiled)
+                    print("Removed compiled python file: %s" % compiled)
+                    xbmc.log("realizer debug: control.add_directory_item sysaddon = %s" % syshandle, xbmc.LOGWARNING) #DEBUG
+                except:
+                    print("Failed to remove compiled python file: %s" % compiled)
+        for dir in dirnames:
+            if "pycache" in dir.lower():
+                compiled = os.path.join(parent, dir)
+                try:
+                    shutil.rmtree(compiled)
+                    print("Removed __pycache__ cache folder: %s" % compiled)
+                except:
+                    print("Failed to remove __pycache__ cache folder:  %s" % compiled)
 
     # Create the compressed add-on archive.
     if not os.path.isdir(addon_target_folder):
